@@ -134,6 +134,23 @@ exports.handleSignin = async (req, res) => {
   }
 };
 
+// @desc    forget password admin
+// @route   POST  /API/v1/admin/forget-password
+// @access  public
+exports.handleForgetPassword = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findOne({ username });
+    // check exsit user
+    if (!user) {
+      return res.status(400).json({ msg: "user not exist", user: false });
+    }
+    // send code to email or phone number
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ msg: "there is a problem" });
+  }
+};
 const generateToken = (key) => {
   return jwt.sign({ key }, process.env.JWT_SECRET, {
     expiresIn: "30d",
