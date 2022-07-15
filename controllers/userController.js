@@ -58,7 +58,8 @@ exports.handleSignup = async (req, res) => {
 // @access  public
 exports.handleActive = async (req, res) => {
   try {
-    const { code, username } = req.body;
+    const { code, token } = req.body;
+    const { key: username } = jwt.decode(token);
     const user = await User.findOne({ username });
     // check exist user
     if (!user) {
@@ -123,9 +124,10 @@ exports.handleSignin = async (req, res) => {
     // success login
     return res.status(200).json({
       success: true,
-      fullname: user.fullname,
-      username: user.username,
-      token: generateToken(user.username),
+      token: generateToken({
+        fullname: user.fullname,
+        username: user.username,
+      }),
     });
   } catch (error) {
     return res.status(500).json({ msg: "there is a problem" });
