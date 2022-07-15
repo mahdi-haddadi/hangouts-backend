@@ -75,7 +75,10 @@ exports.handleActive = async (req, res) => {
     }
 
     //   active user
-    await User.updateOne({ username }, { $set: { active: true } });
+    await User.updateOne(
+      { username: user.username },
+      { $set: { active: true } }
+    );
     return res.status(200).json({ msg: "activated", success: true });
   } catch (error) {
     return res.status(500).json({ msg: "there is a problem" });
@@ -147,6 +150,54 @@ exports.handleForgetPassword = async (req, res) => {
     }
     // send code to email or phone number
     return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ msg: "there is a problem" });
+  }
+};
+
+// @desc    check code for change password admin
+// @route   POST  /API/v1/admin/check-code-set-password
+// @access  public
+exports.checkCodeSetPassword = async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (code !== "123456") {
+      return res.status(400).json({ success: false, msg: "code is false" });
+    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ msg: "there is a problem" });
+  }
+};
+
+// @desc    set new password
+// @route   POST  /API/v1/admin/set-new-password
+// @access  public
+exports.setNewPassword = async (req, res) => {
+  try {
+    const { username, password, passwordConfirm } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ success: false, msg: "user not exist" });
+    }
+    if (password !== passwordConfirm) {
+      return res.status(400).json({
+        success: false,
+        msg: "password and confirm password must to be equal",
+      });
+    }
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "password must be more than 6 chracter" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    await User.updateOne(
+      { username: user.username },
+      { $set: { password: hashPassword } }
+    );
+    return res.status(200).json({ success: true, message: "password updated" });
   } catch (error) {
     return res.status(500).json({ msg: "there is a problem" });
   }
