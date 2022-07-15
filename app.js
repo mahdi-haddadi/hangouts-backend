@@ -9,8 +9,8 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// route user
-app.use("/API/v1/user", require("./routes/user"));
+// route admin
+app.use("/API/v1/admin", require("./routes/user"));
 
 // page 404
 app.use("/", (req, res) => {
