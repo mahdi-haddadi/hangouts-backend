@@ -1,8 +1,13 @@
-const router = require('express').Router()
+const router = require("express").Router();
 
-const { handleSignup ,handleActive} = require('../controllers/userController')
+const {
+  handleSignup,
+  handleSignin,
+  handleActive,
+} = require("../controllers/userController");
 
-router.post('/signup',handleSignup)
-router.post('/active',handleActive)
+router.post("/signup", handleSignup);
+router.post("/active", handleActive);
+router.post("/signin", handleSignin);
 
-module.exports = router
+module.exports = router;

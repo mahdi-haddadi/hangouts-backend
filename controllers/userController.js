@@ -61,18 +61,72 @@ exports.handleActive = async (req, res) => {
     const { code, username } = req.body;
     const user = await User.findOne({ username });
     // check exist user
-    if (!user) res.status(400).json({ msg: "user not exist", success: false });
+    if (!user) {
+      return res.status(400).json({ msg: "user not exist", success: false });
+    }
     // check active user
-    if (user.active)
-      res.status(400).json({ msg: "user is active", success: false });
+    if (user.active) {
+      return res.status(400).json({ msg: "user is active", success: false });
+    }
     // check to be right code
-    if (code !== "123456")
-      res.status(400).json({ msg: "code is false", success: false });
+    if (code !== "123456") {
+      return res.status(400).json({ msg: "code is false", success: false });
+    }
 
     //   active user
     await User.updateOne({ username }, { $set: { active: true } });
     return res.status(200).json({ msg: "activated", success: true });
+  } catch (error) {
+    return res.status(500).json({ msg: "there is a problem" });
+  }
+};
 
+// @desc    signin admin
+// @route   POST  /API/v1/admin/login
+// @access  public
+exports.handleSignin = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // get user
+    const user = await User.findOne({ username });
+
+    // check enter username and password
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "enter username and password" });
+    }
+
+    // check exist user
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, msg: "user is not exist", login: false });
+    }
+
+    // check activate user
+    if (!user.active) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "user is not active" });
+    }
+
+    // sync password user
+    const syncPassword = await bcrypt.compare(password, user.password);
+    // check sync password user
+    if (!syncPassword) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "username or password is not true" });
+    }
+    // success login
+    return res.status(200).json({
+      success: true,
+      fullname: user.fullname,
+      username: user.username,
+      token: generateToken(user.username),
+    });
   } catch (error) {
     return res.status(500).json({ msg: "there is a problem" });
   }
